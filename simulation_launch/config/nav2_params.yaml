@@ -1,3 +1,12 @@
+dwa_path_planner:
+  ros__parameters:
+    use_sim_time: True
+    num_iterations: 5
+    odom_topic: "odom"
+    sim_time: 3.0
+    time_granularity: 0.5
+    pub_trajectories: True
+
 amcl:
   ros__parameters:
     use_sim_time: True

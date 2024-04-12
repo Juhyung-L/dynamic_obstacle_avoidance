@@ -1,60 +1,129 @@
 #include <mutex>
 
+#include "lifecycle_msgs/msg/state.hpp"
+
 #include "global_path_planner/a_star_node.hpp"
 
 namespace a_star
 {
 AStar::AStar(const rclcpp::NodeOptions& options)
-: Node("a_star_node", options)
+: nav2_util::LifecycleNode("a_star_node", "",options)
 , logger_(this->get_logger())
 {
-    // this->declare_parameter("use_sim_time", false);
-    this->declare_parameter("with_slam", false);
-
-    with_slam_ = this->get_parameter("with_slam").as_bool();
-
-    // costmap
     costmap_ros_ = std::make_shared<nav2_costmap_2d::Costmap2DROS>(
         "global_costmap", std::string{get_namespace()}, "global_costmap"
     );
-    costmap_ros_->configure();
-    costmap_thread_ = std::make_unique<nav2_util::NodeThread>(costmap_ros_);
-    costmap_ros_->activate();
-    costmap_ = costmap_ros_->getCostmap();
-
-    path_pub_ = this->create_publisher<nav_msgs::msg::Path>(
-        "path", rclcpp::SystemDefaultsQoS()
-    );
-    goal_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-        "goal_pose", rclcpp::SystemDefaultsQoS(), std::bind(&AStar::goalCB, this, _1)
-    );
-
-    // call computePath at 2Hz
-    timer_ = this->create_wall_timer(
-        500ms, std::bind(&AStar::computePath, this)
-    );
-    timer_->cancel(); // do not start the timer right away
 
     path_.header.frame_id = "map";
 }
 
 AStar::~AStar()
 {
-    timer_->cancel();
     costmap_thread_.reset();
+}
+
+nav2_util::CallbackReturn
+AStar::on_configure(const rclcpp_lifecycle::State & /*state*/)
+{
+    RCLCPP_INFO(logger_, "Configuring");
+
+    costmap_ros_->configure();
+    costmap_ = costmap_ros_->getCostmap();
+    costmap_thread_ = std::make_unique<nav2_util::NodeThread>(costmap_ros_);
+
+    path_pub_ = this->create_publisher<nav_msgs::msg::Path>(
+        "plan", rclcpp::SystemDefaultsQoS()
+    );
+    goal_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
+        "goal_pose", rclcpp::SystemDefaultsQoS(), std::bind(&AStar::goalCB, this, _1)
+    );
+
+    return nav2_util::CallbackReturn::SUCCESS;
+}
+
+nav2_util::CallbackReturn
+AStar::on_activate(const rclcpp_lifecycle::State & /*state*/)
+{
+    RCLCPP_INFO(logger_, "Activating");
+
+    path_pub_->on_activate();
+    costmap_ros_->activate();
+
+    // call computePath at 2Hz
+    timer_ = this->create_wall_timer(
+        500ms, std::bind(&AStar::computePath, this)
+    );
+
+    createBond();
+    return nav2_util::CallbackReturn::SUCCESS;
+}
+
+nav2_util::CallbackReturn
+AStar::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
+{
+    RCLCPP_INFO(logger_, "Deactivating");
+
+    goal_received_ = false;
+    path_pub_->on_deactivate();
+    costmap_ros_->deactivate();
+    timer_->cancel();
+
+    destroyBond();
+    return nav2_util::CallbackReturn::SUCCESS;
+}
+
+nav2_util::CallbackReturn
+AStar::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
+{
+    RCLCPP_INFO(logger_, "Cleaning up");
+
+    path_pub_.reset();
+    goal_sub_.reset();
+    timer_.reset();
+
+    node_pool_.clear();
+    node_grid_.clear();
+    prev_size_x_ = 0;
+    prev_size_y_ = 0;
+
+    if (costmap_ros_->get_current_state().id() ==
+        lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE)
+    {
+        costmap_ros_->cleanup();
+    }
+    costmap_thread_.reset();
+    costmap_ = nullptr;
+    return nav2_util::CallbackReturn::SUCCESS;
+}
+
+nav2_util::CallbackReturn
+AStar::on_shutdown(const rclcpp_lifecycle::State &)
+{
+    RCLCPP_INFO(logger_, "Shutting down");
+    return nav2_util::CallbackReturn::SUCCESS;
 }
 
 void AStar::goalCB(const geometry_msgs::msg::PoseStamped goal)
 {
+    if (this->get_current_state().id() !=
+        lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE)
+    {
+        return;
+    }
     unsigned int goal_x, goal_y;
     costmap_->worldToMap(goal.pose.position.x, goal.pose.position.y, goal_x, goal_y);
     goal_.x = static_cast<int>(goal_x);
     goal_.y = static_cast<int>(goal_y);
-    timer_->reset(); // starts the timer
+    goal_received_ = true;
 }
 
-bool AStar::computePath()
+void AStar::computePath()
 {
+    if (!goal_received_)
+    {
+        return;
+    }
+
     // lock the costmap for the duration of computing the path
     std::unique_lock<nav2_costmap_2d::Costmap2D::mutex_t> lock(*(costmap_->getMutex()));
 
@@ -63,7 +132,7 @@ bool AStar::computePath()
     if (!costmap_ros_->getRobotPose(robot_pose))
     {
         RCLCPP_ERROR(logger_, "Could not get robot pose");
-        return false;
+        return;
     }
     unsigned int src_x, src_y;
     costmap_->worldToMap(robot_pose.pose.position.x, robot_pose.pose.position.y, src_x, src_y);
@@ -102,21 +171,14 @@ bool AStar::computePath()
     {
         // if exited while loop and queue is empty,
         // that means path could not be found
-        return false;
+        return;
     }
 
     // backtrace to get the path
     backtrace(cur_node);
 
-    // if not slam-ing global map is static and path needs to be compute only once
-    if (!with_slam_)
-    {
-        timer_->cancel();
-    }
-
     path_.header.stamp = this->now();
     path_pub_->publish(path_);
-    return true;
 }
 
 void AStar::resetNodes()

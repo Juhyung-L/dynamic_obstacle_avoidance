@@ -5,8 +5,8 @@ from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from launch.actions import DeclareLaunchArgument
-from launch_ros.actions import Node
+from launch.actions import DeclareLaunchArgument, GroupAction, SetEnvironmentVariable
+from launch_ros.actions import Node, SetParameter
 
 def generate_launch_description():
     pkg_share = get_package_share_directory('simulation_launch')
@@ -92,6 +92,12 @@ def generate_launch_description():
         parameters=[ekf_config_file_path, 
                     {'use_sim_time': use_sim_time}]
     )
+    keyboard_telelop_node = Node(
+        package='keyboard_teleop',
+        executable='keyboard_teleop',
+        name='keyboard_teleop',
+        output='screen'
+    )
 
     # launch nav2 localization
     nav2_localization_launch = IncludeLaunchDescription(
@@ -136,6 +142,7 @@ def generate_launch_description():
         
         robot_localization_node,
         rviz_node,
+        keyboard_telelop_node,
         nav2_localization_launch,
-        robot_world_launch
+        robot_world_launch,
     ])

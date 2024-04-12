@@ -180,6 +180,27 @@ Visualization Manager:
         Value: /global_costmap/costmap_updates
       Use Timestamp: false
       Value: true
+    - Alpha: 0.699999988079071
+      Class: rviz_default_plugins/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /local_costmap/costmap
+      Update Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /local_costmap/costmap_updates
+      Use Timestamp: false
+      Value: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz_default_plugins/Path
@@ -207,6 +228,20 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /plan
+      Value: true
+    - Alpha: 1
+      Class: gnc_rviz_plugins/Path2DList
+      Name: Path2DList
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+        Value: /dwa_trajectories
       Value: true
   Enabled: true
   Global Options:
@@ -239,13 +274,6 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /goal_pose
-    - Class: rviz_default_plugins/SetGoal
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /apriltag_approx_pose
     - Class: rviz_default_plugins/PublishPoint
       Single click: true
       Topic:
@@ -261,7 +289,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 13.213981628417969
+      Distance: 8.851277351379395
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -276,10 +304,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5397963523864746
+      Pitch: 1.3147965669631958
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.158578395843506
+      Yaw: 3.1335794925689697
     Saved: ~
 Window Geometry:
   Displays:

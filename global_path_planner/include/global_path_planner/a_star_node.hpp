@@ -10,6 +10,8 @@
 #include "nav_msgs/msg/path.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
+#include "nav2_util/lifecycle_node.hpp"
+#include "rclcpp_lifecycle/lifecycle_publisher.hpp"
 
 using namespace std::chrono_literals;
 using namespace std::placeholders;
@@ -52,11 +54,23 @@ struct cmp
     }
 };
 
-class AStar : public rclcpp::Node
+/**
+ * @class AStar
+ * @brief A ROS node that finds the path to a goal pose from the robot's current pose
+*/
+
+class AStar : public nav2_util::LifecycleNode
 {
 public:
-    AStar(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
+    explicit AStar(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
     ~AStar();
+
+protected:
+    nav2_util::CallbackReturn on_configure(const rclcpp_lifecycle::State & state) override;
+    nav2_util::CallbackReturn on_activate(const rclcpp_lifecycle::State & state) override;
+    nav2_util::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & state) override;
+    nav2_util::CallbackReturn on_cleanup(const rclcpp_lifecycle::State & state) override;
+    nav2_util::CallbackReturn on_shutdown(const rclcpp_lifecycle::State & state) override;
 
 private:
     std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros_;
@@ -67,7 +81,7 @@ private:
     int prev_size_x_{0};
     int prev_size_y_{0};
 
-    rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
+    rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr goal_sub_;
 
     rclcpp::TimerBase::SharedPtr timer_;
@@ -76,7 +90,7 @@ private:
     coordMap goal_;
     coordMap src_;
     nav_msgs::msg::Path path_;
-    bool with_slam_;
+    bool goal_received_;
 
     // a* star stuff
     std::priority_queue<AStarNode*, std::vector<AStarNode*>, cmp> q_;
@@ -85,7 +99,7 @@ private:
     std::vector<AStarNode*> node_grid_;
 
     void goalCB(const geometry_msgs::msg::PoseStamped goal);
-    bool computePath();
+    void computePath();
     void resetNodes();
     void getNeighbors(AStarNode* cur_node);
     void backtrace(AStarNode* cur_node);

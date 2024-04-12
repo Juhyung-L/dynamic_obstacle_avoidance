@@ -37,7 +37,7 @@ def generate_launch_description():
     intial_pose_y = LaunchConfiguration('initial_pose.y')
     intial_pose_yaw = LaunchConfiguration('initial_pose.yaw')
 
-    lifecycle_nodes = ['map_server', 'amcl']
+    lifecycle_nodes = ['map_server', 'amcl', 'astar_path_planner', 'dwa_path_planner']
 
     # Map fully qualified names to relative ones so the node's namespace can be prepended.
     # In case of the transforms (tf), currently, there doesn't seem to be a better alternative
@@ -142,7 +142,28 @@ def generate_launch_description():
                 output='screen',
                 arguments=['--ros-args', '--log-level', log_level],
                 parameters=[{'node_names': lifecycle_nodes},
-                            {'autostart': autostart}])
+                            {'autostart': autostart}]),
+            # my custom nodes
+            Node(
+                package='global_path_planner',
+                executable='astar_path_planner',
+                name='astar_path_planner',
+                output='screen',
+                respawn=use_respawn,
+                respawn_delay=2.0,
+                parameters=[configured_params],
+                arguments=['--ros-args', '--log-level', log_level],
+            ),
+            Node(
+                package='dwa_core',
+                executable='dwa_path_planner',
+                name='dwa_path_planner',
+                output='screen',
+                respawn=use_respawn,
+                respawn_delay=2.0,
+                parameters=[configured_params],
+                arguments=['--ros-args', '--log-level', log_level],
+            )
         ]
     )
 
