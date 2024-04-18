@@ -25,7 +25,7 @@ public:
      * current vel, acceleration, and deceleration
     */
     void initialize(double current_vel, double min_vel, double max_vel, 
-        double acc, double decel, double dt, int num_iterations)
+        double acc, double decel, double dt, int num_samples)
     {
         if (current_vel < min_vel)
         {
@@ -39,8 +39,13 @@ public:
         max_vel_achievable_ = projectVelocity(current_vel, acc, decel, dt, max_vel);
         min_vel_achievable_ = projectVelocity(current_vel, acc, decel, dt, min_vel);
 
+        // number of samples need to be at least 2 because
+        // 1 means you are not dividing the velocity
+        // anything below 1 is invalid (can't have less than 1 sample)
+        num_samples = std::max(2, num_samples);
+
         reset();
-        increment_vel_ = std::fabs(max_vel_achievable_ - min_vel_achievable_) / num_iterations;
+        increment_vel_ = std::fabs(max_vel_achievable_ - min_vel_achievable_) / (num_samples-1);
     }
 
     OneDVelocityIterator& operator++()

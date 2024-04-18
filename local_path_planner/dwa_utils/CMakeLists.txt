@@ -7,22 +7,26 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
 find_package(nav_2d_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 set(dependencies
+  rclcpp
   nav_2d_msgs
   geometry_msgs
   tf2
   tf2_geometry_msgs
-)
+  tf2_ros
+  )
 
 include_directories(include)
 
-add_library(conversions SHARED src/conversions.cpp)
-ament_target_dependencies(conversions ${dependencies})
+add_library(${PROJECT_NAME} SHARED src/conversions.cpp src/transform_utils.cpp)
+ament_target_dependencies(${PROJECT_NAME}  ${dependencies})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -42,12 +46,14 @@ INSTALL(DIRECTORY
 )
 
 INSTALL(TARGETS
-  conversions
-  DESTINATION lib
+  ${PROJECT_NAME} 
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
 )
 
 ament_export_include_directories(include)
-ament_export_libraries(conversions)
+ament_export_libraries(${PROJECT_NAME} )
 ament_export_dependencies(${dependencies})
 
 ament_package()

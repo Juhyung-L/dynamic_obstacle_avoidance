@@ -7,9 +7,45 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(nav2_util REQUIRED)
+find_package(nav2_costmap_2d REQUIRED)
+find_package(nav_2d_msgs REQUIRED)
+find_package(pluginlib REQUIRED)
+
+set(dependencies
+  rclcpp
+  nav2_util
+  nav2_costmap_2d
+  nav_2d_msgs
+  pluginlib
+)
+
+include_directories(include)
+
+add_library(${PROJECT_NAME} SHARED
+  src/global_plan_align.cpp
+)
+
+ament_target_dependencies(${PROJECT_NAME} ${dependencies})
+
+pluginlib_export_plugin_description_file(dwa_core critics.xml)
+
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+install(DIRECTORY include/
+  DESTINATION include/
+)
+
+ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME})
+ament_export_dependencies(
+  ${dependencies}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

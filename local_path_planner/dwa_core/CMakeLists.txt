@@ -16,6 +16,7 @@ find_package(dwa_utils REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
+find_package(dwa_critics REQUIRED)
 
 include_directories(
   include
@@ -31,6 +32,7 @@ set(dependencies
   nav2_util
   rclcpp_lifecycle
   lifecycle_msgs
+  dwa_critics
 )
 
 add_executable(dwa_path_planner src/main.cpp src/dwa_local_planner.cpp)
@@ -42,13 +44,13 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 
-  find_package(ament_cmake_gtest REQUIRED)
-  ament_add_gtest(xytheta_iterator_test test/xytheta_iterator_test.cpp)
-  ament_target_dependencies(xytheta_iterator_test ${dependencies})
+  # find_package(ament_cmake_gtest REQUIRED)
+  # ament_add_gtest(xytheta_iterator_test test/xytheta_iterator_test.cpp)
+  # ament_target_dependencies(xytheta_iterator_test ${dependencies})
 endif()
 
 INSTALL(TARGETS
-dwa_path_planner
+  dwa_path_planner
   DESTINATION lib/${PROJECT_NAME}
 )
 

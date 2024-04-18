@@ -65,8 +65,12 @@ AStar::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
 
     goal_received_ = false;
     path_pub_->on_deactivate();
-    costmap_ros_->deactivate();
     timer_->cancel();
+    if (costmap_ros_->get_current_state().id() ==
+        lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE)
+    {
+        costmap_ros_->deactivate();
+    }
 
     destroyBond();
     return nav2_util::CallbackReturn::SUCCESS;

@@ -84,7 +84,7 @@ def generate_launch_description():
         description='Full path to the ROS2 parameters file to use for all launched nodes')
 
     declare_autostart_cmd = DeclareLaunchArgument(
-        'autostart', default_value='true',
+        'autostart', default_value='false',
         description='Automatically startup the nav2 stack')
 
     declare_use_respawn_cmd = DeclareLaunchArgument(

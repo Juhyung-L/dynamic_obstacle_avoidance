@@ -5,8 +5,8 @@ from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from launch.actions import DeclareLaunchArgument, GroupAction, SetEnvironmentVariable
-from launch_ros.actions import Node, SetParameter
+from launch.actions import DeclareLaunchArgument
+from launch_ros.actions import Node
 
 def generate_launch_description():
     pkg_share = get_package_share_directory('simulation_launch')
@@ -14,7 +14,7 @@ def generate_launch_description():
     rviz_config_file_path = os.path.join(pkg_share, 'config', 'urdf_config.rviz')
     ekf_config_file_path = os.path.join(pkg_share, 'config', 'ekf.yaml')
     world_file_path = os.path.join(pkg_share, 'worlds', 'house.world')
-    robot_model_file_path = os.path.join(pkg_share, 'urdf', 'mobile_bot.urdf')
+    robot_model_file_path = os.path.join(pkg_share, 'urdf', 'kiwi_drive', 'mobile_bot.urdf')
     map_yaml_file_path = os.path.join(pkg_share, 'map', 'map.yaml')
     params_file_path = os.path.join(pkg_share, 'config', 'nav2_params.yaml')
 
@@ -96,7 +96,8 @@ def generate_launch_description():
         package='keyboard_teleop',
         executable='keyboard_teleop',
         name='keyboard_teleop',
-        output='screen'
+        output='screen',
+        parameters=[params_file_path]
     )
 
     # launch nav2 localization

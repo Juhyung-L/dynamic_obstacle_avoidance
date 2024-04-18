@@ -1,11 +1,34 @@
+keyboard_teleop:
+  ros__parameters:
+    vx: 1.0
+    vtheta: 2.0
+    twist_topic: "cmd_vel"
+
 dwa_path_planner:
   ros__parameters:
     use_sim_time: True
-    num_iterations: 5
-    odom_topic: "odom"
-    sim_time: 3.0
+    vx_samples: 5
+    vy_samples: 5
+    vtheta_samples: 10
+    odom_topic: "odometry/filtered"
+    sim_time: 1.7
     time_granularity: 0.5
     pub_trajectories: True
+    min_vel_x: -0.26
+    max_vel_x: 0.26
+    decel_x: -2.5
+    acc_x: 2.5
+    min_vel_y: -0.26
+    max_vel_y: 0.26
+    decel_y: -2.5
+    acc_y: 2.5
+    min_vel_theta: -1.0
+    max_vel_theta: 1.0
+    decel_theta: -3.2
+    acc_theta: 3.2
+    critic_names: ["GlobalPlanAlign"]
+    GlobalPlanAlign:
+      weight: 1.0
 
 amcl:
   ros__parameters:
