@@ -10,13 +10,11 @@ namespace dwa_utils
 {
 bool transformPath2D(
     const std::shared_ptr<tf2_ros::Buffer> tf,
-    const std::string& frame,
+    const std::string& target_frame,
     const nav_2d_msgs::msg::Path2D& in_path,
-    nav_2d_msgs::msg::Path2D& out_path,
-    const rclcpp::Clock::SharedPtr clock,
-    const rclcpp::Duration& transform_tolerance)
+    nav_2d_msgs::msg::Path2D& out_path)
 {
-    if (in_path.header.frame_id == frame)
+    if (in_path.header.frame_id == target_frame)
     {
         out_path = in_path;
         return true;
@@ -25,7 +23,7 @@ bool transformPath2D(
     geometry_msgs::msg::TransformStamped transform;
     try
     {
-        transform = tf->lookupTransform(frame, in_path.header.frame_id, clock->now(), transform_tolerance);
+        transform = tf->lookupTransform(target_frame, in_path.header.frame_id, tf2::TimePointZero);
     }
     catch (tf2::TransformException& ex)
     {

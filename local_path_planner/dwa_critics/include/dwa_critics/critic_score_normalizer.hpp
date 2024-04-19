@@ -29,7 +29,7 @@ public:
         double normalized_score = (score - min_score_) / (max_score_ - min_score_);
         if (invert_) 
         {
-            return 1.0 / normalized_score;
+            return 1.0 - normalized_score;
         }
         return normalized_score;
     }

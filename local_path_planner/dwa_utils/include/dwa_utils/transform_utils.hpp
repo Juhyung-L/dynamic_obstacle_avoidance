@@ -13,11 +13,9 @@ namespace dwa_utils
 {
 bool transformPath2D(
     const std::shared_ptr<tf2_ros::Buffer> tf,
-    const std::string& frame,
+    const std::string& target_frame,
     const nav_2d_msgs::msg::Path2D& in_path,
-    nav_2d_msgs::msg::Path2D& out_path,
-    const rclcpp::Clock::SharedPtr clock,
-    const rclcpp::Duration& transform_tolerance);
+    nav_2d_msgs::msg::Path2D& out_path);
 }
 
 #endif

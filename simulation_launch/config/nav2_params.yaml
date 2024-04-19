@@ -11,9 +11,9 @@ dwa_path_planner:
     vy_samples: 5
     vtheta_samples: 10
     odom_topic: "odometry/filtered"
-    sim_time: 1.7
-    time_granularity: 0.5
-    pub_trajectories: True
+    sim_time: 3.0
+    time_granularity: 0.1
+    debug: True
     min_vel_x: -0.26
     max_vel_x: 0.26
     decel_x: -2.5
@@ -26,8 +26,8 @@ dwa_path_planner:
     max_vel_theta: 1.0
     decel_theta: -3.2
     acc_theta: 3.2
-    critic_names: ["GlobalPlanAlign"]
-    GlobalPlanAlign:
+    critic_names: ["GlobalTrajectoryAlign"]
+    GlobalTrajectoryAlign:
       weight: 1.0
 
 amcl:
@@ -58,7 +58,7 @@ amcl:
     recovery_alpha_fast: 0.0
     recovery_alpha_slow: 0.0
     resample_interval: 1
-    robot_model_type: "nav2_amcl::DifferentialMotionModel"
+    robot_model_type: "nav2_amcl::OmniMotionModel"
     save_pose_rate: 0.5
     sigma_hit: 0.2
     tf_broadcast: true

@@ -24,14 +24,12 @@ set(dependencies
 include_directories(include)
 
 add_library(${PROJECT_NAME} SHARED
-  src/global_plan_align.cpp
+  src/global_trajectory_align.cpp
 )
-
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 
-pluginlib_export_plugin_description_file(dwa_core critics.xml)
-
 install(TARGETS ${PROJECT_NAME}
+  EXPORT ${library_name}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -41,11 +39,17 @@ install(DIRECTORY include/
   DESTINATION include/
 )
 
+install(FILES critics.xml
+  DESTINATION share/${PROJECT_NAME}
+)
+
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
 ament_export_dependencies(
   ${dependencies}
 )
+
+pluginlib_export_plugin_description_file(dwa_critics critics.xml)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

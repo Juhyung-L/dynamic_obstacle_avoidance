@@ -241,7 +241,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Best Effort
-        Value: /dwa_trajectories
+        Value: /sample_trajectories
       Value: true
   Enabled: true
   Global Options:

@@ -12,6 +12,7 @@
 #include "nav2_costmap_2d/costmap_2d.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "geometry_msgs/msg/pose2_d.hpp"
+#include "geometry_msgs/msg/twist.hpp"
 #include "nav2_util/lifecycle_node.hpp"
 #include "rclcpp_lifecycle/lifecycle_publisher.hpp"
 #include "tf2_ros/buffer.h"
@@ -27,8 +28,8 @@ namespace dwa_core
 {
 /**
  * @class DWALocalPlanner
- * @brief A planner that uses the global plan as a guide to find an optimal local plan.
- * Samples velocity to generate local plans and scores them.
+ * @brief A path planner that uses the global trajectory as a guide to find an optimal local trajectory.
+ * Samples velocity to generate local trajectories and scores them.
 */
 
 class DWALocalPlanner : public nav2_util::LifecycleNode
@@ -57,31 +58,36 @@ private:
     std::mutex odom_mtx_;
     std::string odom_topic_;
 
-    rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr global_plan_sub_;
-    nav_msgs::msg::Path global_plan_;
-    std::mutex global_plan_mtx_;
-    bool global_plan_set_;
+    rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr global_traj_sub_;
+    nav_msgs::msg::Path global_traj_;
+    std::mutex global_traj_mtx_;
+    bool global_traj_set_;
 
-    rclcpp_lifecycle::LifecyclePublisher<nav_2d_msgs::msg::Path2DList>::SharedPtr plans_pub_;
-    nav_2d_msgs::msg::Path2DList plans_;
+    rclcpp_lifecycle::LifecyclePublisher<nav_2d_msgs::msg::Path2DList>::SharedPtr trajs_pub_;
+    nav_2d_msgs::msg::Path2DList trajs_;
+
+    rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>::SharedPtr global_traj_pub_;
+
+    rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub_;
 
     pluginlib::ClassLoader<dwa_critics::BaseCritic> critic_loader_;
     std::vector<dwa_critics::BaseCritic::Ptr> critics_;
     std::vector<std::string> critic_names_;
 
     std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+    std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
     double sim_time_;
     double time_granularity_;
     int steps_;
-    bool pub_plans_;
-    std::string plan_frame_;
+    bool debug_;
+    std::string costmap_frame_;
 
     rclcpp::Logger logger_;
     rclcpp::TimerBase::SharedPtr timer_;
 
-    void computePlan();
-    nav_2d_msgs::msg::Path2D generatePlan(
+    void computeVelocityCommand();
+    nav_2d_msgs::msg::Path2D generateTrajectory(
         const geometry_msgs::msg::Pose2D& start_pose,
         const nav_2d_msgs::msg::Twist2D& current_vel,
         const nav_2d_msgs::msg::Twist2D& target_vel);
@@ -99,20 +105,21 @@ private:
         std::lock_guard<std::mutex> lock(odom_mtx_);
         odom_ = odom;
     }
-    void globalPlanCB(const nav_msgs::msg::Path& global_plan)
+    void globalTrajCB(const nav_msgs::msg::Path& global_traj)
     {
-        std::lock_guard<std::mutex> lock(global_plan_mtx_);
-        global_plan_ = global_plan;
+        std::lock_guard<std::mutex> lock(global_traj_mtx_);
+        global_traj_ = global_traj;
+        global_traj_set_ = true;
     }
     bool loadCritics();
 
     /**
-     * @brief The global_plan_ variable gets updated everytime this node receives the global plan
-     * from the global path planner. This function uses the global plan to generate an adjusted global plan by:
-     * 1. cuting the global plan where the local costmap ends
+     * @brief The global_traj_ variable gets updated everytime this node receives a global trajectory
+     * from the global path planner. This function uses the global trajectory to generate an adjusted global trajectory by:
+     * 1. cuting the global trajectory where the local costmap ends
      * 2. filling in poses in between consecutive poses to match local costmap's resolution
     */
-    nav_2d_msgs::msg::Path2D prepareGlobalPlan();
+    nav_2d_msgs::msg::Path2D prepareGlobalTrajectory(nav_2d_msgs::msg::Path2D in_traj);
 };
 }
 

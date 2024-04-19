@@ -8,6 +8,7 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(nav_2d_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
@@ -16,12 +17,13 @@ find_package(tf2_ros REQUIRED)
 
 set(dependencies
   rclcpp
+  nav_msgs
   nav_2d_msgs
   geometry_msgs
   tf2
   tf2_geometry_msgs
   tf2_ros
-  )
+)
 
 include_directories(include)
 
@@ -45,8 +47,8 @@ INSTALL(DIRECTORY
   DESTINATION include/
 )
 
-INSTALL(TARGETS
-  ${PROJECT_NAME} 
+INSTALL(TARGETS ${PROJECT_NAME} 
+  EXPORT ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin

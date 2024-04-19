@@ -32,7 +32,8 @@ public:
     }
 
     virtual void reset() {}
-    virtual double scorePlan(const nav_2d_msgs::msg::Path2D& plan) = 0;
+    virtual void prepare(const nav_2d_msgs::msg::Path2D& traj) = 0;
+    virtual double scoreTrajectory(const nav_2d_msgs::msg::Path2D& traj) = 0;
 
 protected:
     virtual void on_initialize() {}

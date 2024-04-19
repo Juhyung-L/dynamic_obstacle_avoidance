@@ -1,6 +1,7 @@
-#include <mutex>
+#include <algorithm>
 
 #include "lifecycle_msgs/msg/state.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
 
 #include "global_path_planner/a_star_node.hpp"
 
@@ -13,7 +14,6 @@ AStar::AStar(const rclcpp::NodeOptions& options)
     costmap_ros_ = std::make_shared<nav2_costmap_2d::Costmap2DROS>(
         "global_costmap", std::string{get_namespace()}, "global_costmap"
     );
-
     path_.header.frame_id = "map";
 }
 
@@ -283,5 +283,6 @@ void AStar::backtrace(AStarNode* cur_node)
         pose.pose.position.x, pose.pose.position.y
     );
     path_.poses.push_back(pose);
+    std::reverse(path_.poses.begin(), path_.poses.end());
 }
 }
