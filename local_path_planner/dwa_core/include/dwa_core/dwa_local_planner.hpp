@@ -21,8 +21,10 @@
 #include "dwa_core/xytheta_velocity_iterator.hpp"
 #include "dwa_core/kinematics_parameters.hpp"
 #include "nav_2d_msgs/msg/path2_d.hpp"
-#include "nav_2d_msgs/msg/path2_d_list.hpp"
+#include "nav_2d_msgs/msg/dwa_trajectories.hpp"
 #include "dwa_critics/base_critic.hpp"
+
+constexpr double EPSILON = 1e-05;
 
 namespace dwa_core
 {
@@ -63,8 +65,7 @@ private:
     std::mutex global_traj_mtx_;
     bool global_traj_set_;
 
-    rclcpp_lifecycle::LifecyclePublisher<nav_2d_msgs::msg::Path2DList>::SharedPtr trajs_pub_;
-    nav_2d_msgs::msg::Path2DList trajs_;
+    rclcpp_lifecycle::LifecyclePublisher<nav_2d_msgs::msg::DWATrajectories>::SharedPtr trajs_pub_;
 
     rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>::SharedPtr global_traj_pub_;
 
@@ -77,6 +78,7 @@ private:
     std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
+    int prev_num_vel_samples_;
     double sim_time_;
     double time_granularity_;
     int steps_;

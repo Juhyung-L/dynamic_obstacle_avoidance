@@ -1,5 +1,5 @@
-#ifndef OBSTACLE_PROXIMITY_HPP_
-#define OBSTACLE_PROXIMITY_HPP_
+#ifndef DISTANCE_TO_GOAL_HPP_
+#define DISTANCE_TO_GOAL_HPP_
 
 #include "geometry_msgs/msg/pose2_d.hpp"
 
@@ -9,18 +9,21 @@
 namespace dwa_critics
 {
 /**
- * @class ObstacleProximityCritic
- * @brief A critic that penalizes trajectories that are close to obstacles
+ * @class HomingCritic
+ * @brief If the goal pose is inside the local costmap, score local trajectories based on distance between goal pose and last pose of local trajectory
 */
-class ObstacleProximityCritic : public BaseCritic
+class HomingCritic : public BaseCritic
 {
 public:
-    ObstacleProximityCritic();
+    HomingCritic();
     void prepare(const nav_2d_msgs::msg::Path2D& globa_traj, const geometry_msgs::msg::Pose2D& goal_pose) override;
     double scoreTrajectory(const nav_2d_msgs::msg::Path2D& local_traj) override;
-    virtual ~ObstacleProximityCritic() = default;
+    virtual ~HomingCritic() = default;
 private:
     void on_initialize() override;
+    geometry_msgs::msg::Pose2D goal_pose_;
+    bool goal_inside_costmap_;
 };
 }
+
 #endif

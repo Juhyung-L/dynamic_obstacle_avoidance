@@ -135,14 +135,6 @@ def generate_launch_description():
                              'initial_pose.yaw': intial_pose_yaw}],
                 arguments=['--ros-args', '--log-level', log_level],
                 remappings=remappings),
-            Node(
-                package='nav2_lifecycle_manager',
-                executable='lifecycle_manager',
-                name='lifecycle_manager_localization',
-                output='screen',
-                arguments=['--ros-args', '--log-level', log_level],
-                parameters=[{'node_names': lifecycle_nodes},
-                            {'autostart': autostart}]),
             # my custom nodes
             Node(
                 package='global_path_planner',
@@ -163,7 +155,15 @@ def generate_launch_description():
                 respawn_delay=2.0,
                 parameters=[configured_params],
                 arguments=['--ros-args', '--log-level', log_level],
-            )
+            ),
+            Node(
+                package='nav2_lifecycle_manager',
+                executable='lifecycle_manager',
+                name='lifecycle_manager_localization',
+                output='screen',
+                arguments=['--ros-args', '--log-level', log_level],
+                parameters=[{'node_names': lifecycle_nodes},
+                            {'autostart': autostart}])
         ]
     )
 

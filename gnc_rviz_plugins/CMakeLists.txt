@@ -35,8 +35,8 @@ include_directories(include)
 set(library_name ${PROJECT_NAME})
 
 add_library(${library_name} SHARED
-  src/path2d_list_display.cpp
-  include/gnc_rviz_plugins/path2d_list_display.hpp
+  src/dwa_trajectories_display.cpp
+  include/gnc_rviz_plugins/dwa_trajectories_display.hpp
 )
 ament_target_dependencies(${library_name} ${dependencies})
 target_include_directories(${library_name} PUBLIC ${OGRE_INCLUDE_DIRS})

@@ -6,42 +6,42 @@
 #include "rviz_common/properties/vector_property.hpp"
 #include "rviz_rendering/material_manager.hpp"
 
-#include "gnc_rviz_plugins/path2d_list_display.hpp"
-#include "nav_2d_msgs/msg/path2_d.hpp"
+#include "gnc_rviz_plugins/dwa_trajectories_display.hpp"
 
 namespace gnc_rviz_plugins
 {
-Path2DListDisplay::Path2DListDisplay(rviz_common::DisplayContext* display_context)
-: Path2DListDisplay()
+DWATrajectoriesDisplay::DWATrajectoriesDisplay(rviz_common::DisplayContext* display_context)
+: DWATrajectoriesDisplay()
 {
     context_ = display_context;
     scene_manager_ = context_->getSceneManager();
     scene_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
 }
 
-Path2DListDisplay::Path2DListDisplay()
+DWATrajectoriesDisplay::DWATrajectoriesDisplay()
 {
     alpha_property_ = new rviz_common::properties::FloatProperty(
         "Alpha", 1.0,
-        "Amount of transparency to apply to the path.", this);
+        "Amount of transparency to apply to the trajectories.", this);
     color_.a = alpha_property_->getFloat();
+    color_.b = 0.0;
 
     offset_property_ = new rviz_common::properties::VectorProperty(
         "Offset", Ogre::Vector3::ZERO,
-        "Allows you to offset the path from the origin of the reference frame.  In meters.",
+        "Allows you to offset the trajectories from the origin of the reference frame.  In meters.",
         this, SLOT(updateOffset()));
 
     static int count = 0;
-    std::string material_name = "Path2DMaterial" + std::to_string(count++);
+    std::string material_name = "Trajectory2DMaterial" + std::to_string(count++);
     lines_material_ = rviz_rendering::MaterialManager::createMaterialWithNoLighting(material_name);
 }
 
-Path2DListDisplay::~Path2DListDisplay()
+DWATrajectoriesDisplay::~DWATrajectoriesDisplay()
 {
     destroyObjects();
 }
 
-void Path2DListDisplay::onInitialize()
+void DWATrajectoriesDisplay::onInitialize()
 {
     MFDClass::onInitialize();
 
@@ -49,15 +49,20 @@ void Path2DListDisplay::onInitialize()
     updateBufferLength();
 }
 
-void Path2DListDisplay::reset()
+void DWATrajectoriesDisplay::reset()
 {
     MFDClass::reset();
     updateBufferLength();
 }
 
 // this function is called everytime a new message arrives and needs to be displayed
-void Path2DListDisplay::processMessage(nav_2d_msgs::msg::Path2DList::ConstSharedPtr msg)
+void DWATrajectoriesDisplay::processMessage(nav_2d_msgs::msg::DWATrajectories::ConstSharedPtr msg)
 {
+    if (msg->paths.empty() || msg->scores.empty())
+    {
+        return;
+    }
+
     // check if message has valid floats
     if (!validateMsg(*msg))
     {
@@ -86,7 +91,7 @@ void Path2DListDisplay::processMessage(nav_2d_msgs::msg::Path2DList::ConstShared
     transform.setTrans(position);
 
     // need detach and reattach all manual objects
-    // to prevent previous path drawings from lingering on the scene
+    // to prevent previous trajectories drawings from lingering on the scene
     scene_node_->detachAllObjects();
     for (auto& manual_object : manual_objects_)
     {
@@ -95,12 +100,28 @@ void Path2DListDisplay::processMessage(nav_2d_msgs::msg::Path2DList::ConstShared
     }
 
     // make sure msg->paths.size() == manual_objects_.size()
-    // this will be called once since the number of paths in the message will remain constant
+    // this will be called once since the number of trajectories in the message will remain constant
     if (buffer_length_ != msg->paths.size())
     {
         buffer_length_ = msg->paths.size();
         updateBufferLength();
     }
+
+    // get max and min total_score
+    double max_score = msg->scores[0];
+    double min_score = msg->scores[0];
+    for (size_t i=1; i<msg->scores.size(); ++i)
+    {
+        if (msg->scores[i] > max_score)
+        {
+            max_score = msg->scores[i];
+        }
+        if (msg->scores[i] < min_score)
+        {
+            min_score = msg->scores[i]; 
+        }
+    }
+    double diff = max_score - min_score;
 
     // update manual objects
     Ogre::ManualObject* manual_object = nullptr;
@@ -114,6 +135,10 @@ void Path2DListDisplay::processMessage(nav_2d_msgs::msg::Path2DList::ConstShared
         manual_object->estimateVertexCount(path.poses.size());
         manual_object->begin(
             lines_material_->getName(), Ogre::RenderOperation::OT_LINE_STRIP, "rviz_rendering");
+        // set color based on score
+        color_.g = (msg->scores[i] - min_score) / diff;
+        color_.r = 1.0 - (msg->scores[i] - min_score) / diff;
+
         for (auto& pose : path.poses)
         {
             ogre_pose.x = pose.x;
@@ -129,7 +154,7 @@ void Path2DListDisplay::processMessage(nav_2d_msgs::msg::Path2DList::ConstShared
     context_->queueRender();
 }
 
-bool Path2DListDisplay::validateMsg(const nav_2d_msgs::msg::Path2DList& msg)
+bool DWATrajectoriesDisplay::validateMsg(const nav_2d_msgs::msg::DWATrajectories& msg)
 {
     for (auto& path : msg.paths)
     {
@@ -146,13 +171,13 @@ bool Path2DListDisplay::validateMsg(const nav_2d_msgs::msg::Path2DList& msg)
     return true;
 }
 
-void Path2DListDisplay::updateOffset()
+void DWATrajectoriesDisplay::updateOffset()
 {
     scene_node_->setPosition(offset_property_->getVector());
     context_->queueRender();
 }
 
-void Path2DListDisplay::destroyObjects()
+void DWATrajectoriesDisplay::destroyObjects()
 {
     for (auto manual_object : manual_objects_)
     {
@@ -162,7 +187,7 @@ void Path2DListDisplay::destroyObjects()
     manual_objects_.clear();
 }
 
-void Path2DListDisplay::updateBufferLength()
+void DWATrajectoriesDisplay::updateBufferLength()
 {
     destroyObjects();
 
@@ -176,4 +201,4 @@ void Path2DListDisplay::updateBufferLength()
 }
 
 #include <pluginlib/class_list_macros.hpp>  // NOLINT
-PLUGINLIB_EXPORT_CLASS(gnc_rviz_plugins::Path2DListDisplay, rviz_common::Display)
+PLUGINLIB_EXPORT_CLASS(gnc_rviz_plugins::DWATrajectoriesDisplay, rviz_common::Display)

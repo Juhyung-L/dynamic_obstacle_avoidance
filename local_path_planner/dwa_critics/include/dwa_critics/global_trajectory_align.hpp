@@ -4,9 +4,10 @@
 #include <vector>
 #include <queue>
 
-#include "dwa_critics/base_critic.hpp"
-#include "dwa_critics/critic_score_normalizer.hpp"
+#include "geometry_msgs/msg/pose2_d.hpp"
+
 #include "nav_2d_msgs/msg/path2_d.hpp"
+#include "dwa_critics/base_critic.hpp"
 
 namespace dwa_critics
 {
@@ -26,7 +27,7 @@ struct Node
 };
 /**
  * @class GlobalTrajectoryAlignCritic
- * @brief A critic that gives lower points to local trajectorys that align with the global trajectory
+ * @brief A critic penalizes trajectories that do not align with the global trajectory
 */
 class GlobalTrajectoryAlignCritic : public BaseCritic 
 {
@@ -35,8 +36,8 @@ public:
     /**
      * @param Trajectory Global Trajectory in map frame
     */
-    void prepare(const nav_2d_msgs::msg::Path2D& traj) override;
-    double scoreTrajectory(const nav_2d_msgs::msg::Path2D& traj) override;
+    void prepare(const nav_2d_msgs::msg::Path2D& global_traj, const geometry_msgs::msg::Pose2D& goal_pose) override;
+    double scoreTrajectory(const nav_2d_msgs::msg::Path2D& local_traj) override;
     virtual ~GlobalTrajectoryAlignCritic() = default;
 
 private:
@@ -45,7 +46,6 @@ private:
     std::vector<unsigned char> alignment_map_;
     unsigned int size_x_;
     unsigned int size_y_;
-    CriticScoreNormalizer score_normalizer_;
 };
 }
 

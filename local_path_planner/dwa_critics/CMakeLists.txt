@@ -8,6 +8,7 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(nav2_costmap_2d REQUIRED)
 find_package(nav_2d_msgs REQUIRED)
@@ -15,6 +16,7 @@ find_package(pluginlib REQUIRED)
 
 set(dependencies
   rclcpp
+  geometry_msgs
   nav2_util
   nav2_costmap_2d
   nav_2d_msgs
@@ -25,6 +27,8 @@ include_directories(include)
 
 add_library(${PROJECT_NAME} SHARED
   src/global_trajectory_align.cpp
+  src/obstacle_proximity.cpp
+  src/homing.cpp
 )
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 

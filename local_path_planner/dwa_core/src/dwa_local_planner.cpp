@@ -17,6 +17,26 @@ using namespace std::placeholders;
 
 namespace dwa_core
 {
+/**
+ * @struct Node
+ * @brief Simple struct to encapsulate velocity command and its associated critic scores
+*/
+struct Node
+{
+    nav_2d_msgs::msg::Twist2D cmd_vel;
+    std::vector<double> critics_scores;
+    double total_score{0.0};
+};
+/**
+ * @struct DebugNode
+ * @brief Used to send trajectory information to RViz plugin for visualization
+*/
+struct DebugNode
+{
+    nav_2d_msgs::msg::Path2D traj;
+    double total_score;
+};
+
 DWALocalPlanner::DWALocalPlanner(rclcpp::NodeOptions node_options)
 : nav2_util::LifecycleNode("dwa_local_planner", "", node_options)
 , critic_loader_("dwa_critics", "dwa_critics::BaseCritic")
@@ -38,9 +58,9 @@ DWALocalPlanner::DWALocalPlanner(rclcpp::NodeOptions node_options)
         "local_costmap", std::string{get_namespace()}, "local_costmap"
     );
     costmap_frame_ = "odom";
-    trajs_.header.frame_id = costmap_frame_;
     steps_ = std::ceil(sim_time_ / time_granularity_);
     global_traj_set_ = false;
+    prev_num_vel_samples_ = 0;
 }
 
 DWALocalPlanner::~DWALocalPlanner()
@@ -63,7 +83,7 @@ DWALocalPlanner::on_configure(const rclcpp_lifecycle::State & /*state*/)
     global_traj_sub_ = this->create_subscription<nav_msgs::msg::Path>(
         "plan", rclcpp::SystemDefaultsQoS(), std::bind(&DWALocalPlanner::globalTrajCB, this, _1)
     );
-    trajs_pub_ = this->create_publisher<nav_2d_msgs::msg::Path2DList>(
+    trajs_pub_ = this->create_publisher<nav_2d_msgs::msg::DWATrajectories>(
         "sample_trajectories", rclcpp::SystemDefaultsQoS()
     );
     cmd_vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>(
@@ -95,9 +115,8 @@ DWALocalPlanner::on_activate(const rclcpp_lifecycle::State & /*state*/)
     global_traj_pub_->on_activate();
     costmap_ros_->activate();
 
-    // 2 Hz timer
     timer_ = this->create_wall_timer(
-        250ms, std::bind(&DWALocalPlanner::computeVelocityCommand, this)
+        50ms, std::bind(&DWALocalPlanner::computeVelocityCommand, this)
     );
 
     createBond();
@@ -114,6 +133,8 @@ DWALocalPlanner::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
     cmd_vel_pub_->on_deactivate();
     global_traj_pub_->on_deactivate();
     timer_->cancel();
+    timer_->reset();
+    timer_ = nullptr;
     if (costmap_ros_->get_current_state().id() ==
         lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE)
     {
@@ -134,7 +155,6 @@ DWALocalPlanner::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
     trajs_pub_.reset();
     cmd_vel_pub_.reset();
     global_traj_pub_.reset();
-    timer_.reset();
     tf_buffer_.reset();
     tf_listener_.reset();
     for (auto& critic : critics_)
@@ -190,9 +210,12 @@ void DWALocalPlanner::computeVelocityCommand()
     }
     transformed_global_traj.header.frame_id = costmap_frame_;
 
+    geometry_msgs::msg::Pose2D goal_pose;
+    goal_pose.x = global_traj_2d.poses.back().x;
+    goal_pose.y = global_traj_2d.poses.back().y;
     for (auto& critic : critics_)
     {
-        critic->prepare(transformed_global_traj);
+        critic->prepare(transformed_global_traj, goal_pose);
     }
 
     if (debug_)
@@ -200,10 +223,6 @@ void DWALocalPlanner::computeVelocityCommand()
         global_traj_pub_->publish(dwa_utils::path2Dto3D(transformed_global_traj));
     }
 
-    trajs_.paths.clear();
-    double best_score = std::numeric_limits<double>::min();
-    nav_2d_msgs::msg::Path2D best_traj;
-    nav_2d_msgs::msg::Twist2D best_cmd_vel;
     geometry_msgs::msg::Pose2D start_pose = dwa_utils::pose3Dto2D(pose.pose);
 
     // lock to read from odom_
@@ -213,43 +232,121 @@ void DWALocalPlanner::computeVelocityCommand()
 
     // sample local trajs and score them
     vel_it_.initialize(current_vel, sim_time_);
+    std::vector<Node> nodes;
+    nodes.reserve(prev_num_vel_samples_);
+    int i = 0;
+    std::vector<int> best_score_idxs{0, 0, 0};
+    std::vector<int> worst_score_idxs{0, 0, 0};
+    std::vector<DebugNode> debug_nodes;
+    debug_nodes.reserve(prev_num_vel_samples_);
     while (!vel_it_.isFinished())
     {
-        double score = 0.0;
+        Node node;
 
         // generate trajs
         nav_2d_msgs::msg::Twist2D cmd_vel = vel_it_.getCurrentVel();
         nav_2d_msgs::msg::Path2D traj = generateTrajectory(start_pose, current_vel, cmd_vel);
+        node.cmd_vel = cmd_vel;
 
         // store trajs for rviz
         if (debug_)
         {
-            trajs_.paths.push_back(traj);
+            DebugNode debug_node;
+            debug_node.traj = traj;
+            debug_nodes.push_back(debug_node);
         }
         
         // score trajs
-        for (auto& critic : critics_)
+        for (int j=0; j<critics_.size(); ++j)
         {
-            score += critic->scoreTrajectory(traj);
+            node.critics_scores.push_back(critics_[j]->scoreTrajectory(traj));            
         }
+        nodes.push_back(node);
 
-        // store the best trajectory
-        if (score > best_score)
+        for (int j=0; j<critics_.size(); ++j)
         {
-            best_score = score;
-            best_traj = traj;
-            best_cmd_vel = cmd_vel;
+            // store best score
+            if (nodes[i].critics_scores[j] > nodes[best_score_idxs[j]].critics_scores[j])
+            {
+                best_score_idxs[j] = i;
+            }
+
+            // store worst score
+            if (nodes[i].critics_scores[j] < nodes[worst_score_idxs[j]].critics_scores[j])
+            {
+                worst_score_idxs[j] = i;
+            }
         }
 
         // increment velocity iterator
         ++vel_it_;
+        ++i;
+    }
+    prev_num_vel_samples_ = i;
+
+    // normalize scores
+    for (int j=0; j<critics_.size(); ++j)
+    {
+        double best_score = nodes[best_score_idxs[j]].critics_scores[j];
+        double worst_score = nodes[worst_score_idxs[j]].critics_scores[j];
+        double diff = best_score - worst_score;
+        if (diff < EPSILON)
+        {
+            // if the difference between the max and min scores is very small,
+            // dont incorporate the critic into the total score
+            continue;
+        }
+
+        for (int k=0; k<i; ++k)
+        {
+            double normalized_score;
+            if (critics_[j]->invert_score_)
+            {
+                normalized_score = critics_[j]->weight_  * (1.0 - ((nodes[k].critics_scores[j] - worst_score) / diff));
+            }
+            else
+            {
+                normalized_score = critics_[j]->weight_ * (nodes[k].critics_scores[j] - worst_score) / diff;
+            }
+            nodes[k].total_score += normalized_score;
+        }
     }
 
-    cmd_vel_pub_->publish(dwa_utils::twist2Dto3D(best_cmd_vel));
+    int best_total_score_idx=0;
+    for (int j=0; j<i; ++j)
+    {
+        if (nodes[j].total_score > nodes[best_total_score_idx].total_score)
+        {
+            best_total_score_idx = j;
+        }
+    }
+
+    cmd_vel_pub_->publish(dwa_utils::twist2Dto3D(nodes[best_total_score_idx].cmd_vel));
 
     if (debug_)
     {
-        trajs_pub_->publish(trajs_);
+        for (int j=0; j<i; ++j)
+        {
+            debug_nodes[j].total_score = nodes[j].total_score;
+        }
+        auto cmp = 
+            [](const DebugNode& n1, const DebugNode& n2)
+            {
+                return n1.total_score > n2.total_score;
+            };
+        std::sort(debug_nodes.begin(), debug_nodes.end(), cmp);
+        nav_2d_msgs::msg::DWATrajectories trajs;
+        trajs.header.frame_id = costmap_frame_;
+        
+        int num_paths_to_print = 10;
+        trajs.scores.reserve(num_paths_to_print);
+        trajs.paths.reserve(num_paths_to_print);
+        for (int j=0; j<num_paths_to_print; ++j)
+        {
+            trajs.scores.push_back(debug_nodes[j].total_score);
+            trajs.paths.push_back(debug_nodes[j].traj);
+        }
+        trajs_pub_->publish(trajs);
     }
 }
 

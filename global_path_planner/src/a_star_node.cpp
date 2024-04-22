@@ -66,6 +66,8 @@ AStar::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
     goal_received_ = false;
     path_pub_->on_deactivate();
     timer_->cancel();
+    timer_.reset();
+    timer_ = nullptr;
     if (costmap_ros_->get_current_state().id() ==
         lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE)
     {
@@ -83,7 +85,6 @@ AStar::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
 
     path_pub_.reset();
     goal_sub_.reset();
-    timer_.reset();
 
     node_pool_.clear();
     node_grid_.clear();

@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 
+#include "geometry_msgs/msg/pose2_d.hpp"
 #include "nav2_costmap_2d/costmap_2d_ros.hpp"
 #include "nav2_costmap_2d/costmap_2d.hpp"
 #include "nav2_util/lifecycle_node.hpp"
@@ -32,8 +33,16 @@ public:
     }
 
     virtual void reset() {}
-    virtual void prepare(const nav_2d_msgs::msg::Path2D& traj) = 0;
-    virtual double scoreTrajectory(const nav_2d_msgs::msg::Path2D& traj) = 0;
+    /**
+     * @param global_traj Global trajectory inside of the local costmap
+     * @param goal_pose Final pose on the global trajectory (can be outside of the local costmap)
+     * @brief The parameters provide exhaustive information about the global trajectory
+     * and the derived classes might not require all of them
+    */
+    virtual void prepare(const nav_2d_msgs::msg::Path2D& global_traj, const geometry_msgs::msg::Pose2D& goal_pose) = 0;
+    virtual double scoreTrajectory(const nav_2d_msgs::msg::Path2D& local_traj) = 0;
+    double weight_;
+    bool invert_score_;
 
 protected:
     virtual void on_initialize() {}
@@ -41,7 +50,6 @@ protected:
     nav2_costmap_2d::Costmap2D* costmap_;
     nav2_util::LifecycleNode::SharedPtr nh_;
     std::string name_;
-    double weight_;
 };
 }
 
