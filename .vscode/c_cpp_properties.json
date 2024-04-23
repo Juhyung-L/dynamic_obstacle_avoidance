@@ -1,0 +1,27 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/opt/ros/humble/include/**",
+        "/home/dev_ws/src/global_path_planner/include/**",
+        "/home/dev_ws/src/local_path_planner/dwa_core/include/**",
+        "/home/dev_ws/src/local_path_planner/dwa_critics/include/**",
+        "/home/dev_ws/src/local_path_planner/dwa_utils/include/**",
+        "/home/dev_ws/install/nav_2d_msgs/include/**",
+        "/home/dev_ws/src/gnc_rviz_plugins/include/**",
+        "/home/dev_ws/src/nav_2d_utils/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
