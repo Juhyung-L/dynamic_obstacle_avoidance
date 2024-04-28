@@ -4,9 +4,11 @@ Guidance, Navigation, and Control for mobile robot. This repository has two pack
 Detailed Explanation at: https://juhyungsprojects.blogspot.com/2024/04/dynamic-window-approach-for-local-path.html
 
 # A* Search Global Path Planner:
-The A* Search global path planner finds the shortest trajectory from the robot's current pose to the goal pose using the static global costmap and the A* Search algorithm. The algorithm is a modified Breath-First Search algorithm where a priority queue is used instead of a regular queue. The priority queue sorts the inserted nodes based on their heuristics, which in this case is 
-`distance between the current node and the goal node + distance between the current node and the start node`. The node with the lowest heuristics is at the top of the queue and therefore popped first.
-
+The A* Search global path planner finds the shortest trajectory from the robot's current pose to the goal pose using the static global costmap and the A* Search algorithm. The algorithm is a modified Breath-First Search algorithm where a priority queue is used instead of a regular queue. The priority queue sorts the inserted nodes based on their heuristics.The heuristics in this case is the sum of three components:
+- Distance between the current node and the goal node
+- Distance between the current node and the start node
+- Occupancy value of the current node
+Every time a node is inserted into the priority queue, the node with the lowest priority comes at the top and is therefore popped first. Intuitively, this means that nodes that are both closer to the goal and obstacle-free are searched first when looking for the shortest path.
 
 https://github.com/Juhyung-L/GNC/assets/102873080/6edecccf-5511-4af7-8c7a-431e26509217
 
