@@ -1,10 +1,11 @@
 # GNC
-Guidance, Navigation, and Control for mobile robot. This repository has two packages: A* search global path planner and Dynamic Window Approach (DWA) local path planner.
+Guidance, Navigation, and Control for mobile robot. This repository has two packages: A* Search global path planner and Dynamic Window Approach (DWA) local path planner.
 
 Detailed Explanation at: https://juhyungsprojects.blogspot.com/2024/04/dynamic-window-approach-for-local-path.html
 
 # A* Search Global Path Planner:
-The A* Search global path planner finds the shortest trajectory from the robot's current pose to the goal pose using the static global costmap and the A* Search algorithm.
+The A* Search global path planner finds the shortest trajectory from the robot's current pose to the goal pose using the static global costmap and the A* Search algorithm. The algorithm is a modified Breath-First Search algorithm where a priority queue is used instead of a regular queue. The priority queue sorts the inserted nodes based on their heuristics, which in this case is 
+`distance between the current node and the goal node + distance between the current node and the start node`. The node with the lowest heuristics is at the top of the queue and therefore popped first.
 
 
 https://github.com/Juhyung-L/GNC/assets/102873080/6edecccf-5511-4af7-8c7a-431e26509217
