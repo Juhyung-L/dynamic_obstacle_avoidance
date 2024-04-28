@@ -1,5 +1,5 @@
-# GNC
-Guidance, Navigation, and Control for mobile robot. This repository has two packages: A* Search global path planner and Dynamic Window Approach (DWA) local path planner.
+# dynamic_obstacle_avoidance
+This repository has two packages: A* Search global path planner and Dynamic Window Approach (DWA) local path planner.
 
 Detailed Explanation at: https://juhyungsprojects.blogspot.com/2024/04/dynamic-window-approach-for-local-path.html
 
