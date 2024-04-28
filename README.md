@@ -8,7 +8,8 @@ The A* Search global path planner finds the shortest trajectory from the robot's
 - Distance between the current node and the goal node
 - Distance between the current node and the start node
 - Occupancy value of the current node
-Every time a node is inserted into the priority queue, the node with the lowest priority comes at the top and is therefore popped first. Intuitively, this means that nodes that are both closer to the goal and obstacle-free are searched first when looking for the shortest path.
+
+Every time a node is inserted into the priority queue, the node with the lowest priority comes at the top and is therefore popped first. Intuitively, this means that nodes that are both closer to the goal and obstacle-free are searched first when looking for the shortest trajectory.
 
 https://github.com/Juhyung-L/GNC/assets/102873080/6edecccf-5511-4af7-8c7a-431e26509217
 
