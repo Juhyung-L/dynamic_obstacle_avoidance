@@ -25,7 +25,7 @@ void ObstacleProximityCritic::prepare(const nav_2d_msgs::msg::Path2D& /*globa_tr
 double ObstacleProximityCritic::scoreTrajectory(const nav_2d_msgs::msg::Path2D& local_traj)
 {
     double score = 0.0;
-    for (int i=0; i<local_traj.poses.size(); ++i)
+    for (size_t i=0; i<local_traj.poses.size(); ++i)
     {
         unsigned int x, y;
         if (costmap_->worldToMap(local_traj.poses[i].x, local_traj.poses[i].y, x, y))
@@ -34,7 +34,7 @@ double ObstacleProximityCritic::scoreTrajectory(const nav_2d_msgs::msg::Path2D& 
             {
                 // if the current pose is inside an obstacle, treat the remaining pose as also being inside the obstacle
                 // prevents trajectories that pass through obstacles from being favored
-                score += (local_traj.poses.size() - i) * nav2_costmap_2d::LETHAL_OBSTACLE;
+                score += static_cast<double>(local_traj.poses.size() - i) * static_cast<double>(nav2_costmap_2d::LETHAL_OBSTACLE);
                 break;
             }
             else

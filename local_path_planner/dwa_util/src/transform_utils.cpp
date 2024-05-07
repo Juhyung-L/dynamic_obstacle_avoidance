@@ -4,9 +4,9 @@
 #include "tf2/LinearMath/Matrix3x3.h"
 #include "tf2/exceptions.h"
 
-#include "dwa_utils/transform_utils.hpp"
+#include "dwa_util/transform_utils.hpp"
 
-namespace dwa_utils
+namespace dwa_util
 {
 bool transformPath2D(
     const std::shared_ptr<tf2_ros::Buffer> tf,
@@ -50,7 +50,7 @@ bool transformPath2D(
     tf2::Vector3 out_pose;
 
     out_path.poses.resize(in_path.poses.size());
-    for (int i=0; i<in_path.poses.size(); ++i)
+    for (size_t i=0; i<in_path.poses.size(); ++i)
     {
         in_pose.setX(in_path.poses[i].x);
         in_pose.setY(in_path.poses[i].y);

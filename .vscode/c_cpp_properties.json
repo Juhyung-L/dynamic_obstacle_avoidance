@@ -6,14 +6,16 @@
         "limitSymbolsToIncludedHeaders": false
       },
       "includePath": [
+        "/home/dev_ws/install/gnc_rviz_plugins/include/**",
+        "/home/dev_ws/install/dwa_critics/include/**",
+        "/home/dev_ws/install/nav_2d_msgs/include/**",
         "/opt/ros/humble/include/**",
         "/home/dev_ws/src/global_path_planner/include/**",
+        "/home/dev_ws/src/gnc_rviz_plugins/include/**",
         "/home/dev_ws/src/local_path_planner/dwa_core/include/**",
         "/home/dev_ws/src/local_path_planner/dwa_critics/include/**",
-        "/home/dev_ws/src/local_path_planner/dwa_utils/include/**",
-        "/home/dev_ws/install/nav_2d_msgs/include/**",
-        "/home/dev_ws/src/gnc_rviz_plugins/include/**",
-        "/home/dev_ws/src/nav_2d_utils/include/**",
+        "/home/dev_ws/src/local_path_planner/dwa_util/include/**",
+        "/home/dev_ws/src/util/include/**",
         "/usr/include/**"
       ],
       "name": "ROS",

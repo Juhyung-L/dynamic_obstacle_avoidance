@@ -9,7 +9,7 @@
 
 #include "nav_2d_msgs/msg/path2_d.hpp"
 
-namespace dwa_utils
+namespace dwa_util
 {
 bool transformPath2D(
     const std::shared_ptr<tf2_ros::Buffer> tf,

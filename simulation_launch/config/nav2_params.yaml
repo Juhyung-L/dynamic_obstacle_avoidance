@@ -14,18 +14,18 @@ dwa_path_planner:
     sim_time: 3.0
     time_granularity: 0.1
     debug: True
-    min_vel_x: -0.5
-    max_vel_x: 0.5
+    min_vel_x: -0.3
+    max_vel_x: 0.3
     decel_x: -2.5
     acc_x: 2.5
-    min_vel_y: -0.5
-    max_vel_y: 0.5
+    min_vel_y: -0.3
+    max_vel_y: 0.3
     decel_y: -2.5
     acc_y: 2.5
-    min_vel_theta: -0.5
-    max_vel_theta: 0.5
-    decel_theta: -3.0
-    acc_theta: 3.0
+    min_vel_theta: -0.3
+    max_vel_theta: 0.3
+    decel_theta: -2.5
+    acc_theta: 2.5
     critic_names: ["GlobalTrajectoryAlign", "ObstacleProximity", Homing]
     GlobalTrajectoryAlign:
       weight: 1.0
@@ -235,7 +235,7 @@ local_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 5.0
-        inflation_radius: 0.35
+        inflation_radius: 0.24
       voxel_layer:
         plugin: "nav2_costmap_2d::VoxelLayer"
         enabled: True

@@ -30,6 +30,7 @@ RUN curl -sSL http://get.gazebosim.org | sh
 ########################
 
 WORKDIR /home/dev_ws
+RUN mkdir src
 
 # necessary ros packages
 RUN apt-get update && apt-get install -q -y --no-install-recommends \

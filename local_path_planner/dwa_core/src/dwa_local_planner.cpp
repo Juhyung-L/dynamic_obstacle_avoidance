@@ -7,9 +7,9 @@
 #include "lifecycle_msgs/msg/state.hpp"
 
 #include "dwa_core/dwa_local_planner.hpp"
-#include "dwa_utils/conversions.hpp"
+#include "dwa_util/conversions.hpp"
+#include "dwa_util/transform_utils.hpp"
 #include "nav_2d_msgs/msg/twist2_d.hpp"
-#include "dwa_utils/transform_utils.hpp"
 #include "dwa_critics/base_critic.hpp"
 
 using namespace std::chrono_literals;
@@ -199,12 +199,12 @@ void DWALocalPlanner::computeVelocityCommand()
 
     // prepare global trajectory
     std::unique_lock<std::mutex> global_traj_lock(global_traj_mtx_);
-    nav_2d_msgs::msg::Path2D global_traj_2d = dwa_utils::path3Dto2D(global_traj_);
+    nav_2d_msgs::msg::Path2D global_traj_2d = dwa_util::path3Dto2D(global_traj_);
     global_traj_lock.unlock();
 
     nav_2d_msgs::msg::Path2D adjusted_global_traj = prepareGlobalTrajectory(global_traj_2d);
     nav_2d_msgs::msg::Path2D transformed_global_traj;
-    if (!dwa_utils::transformPath2D(tf_buffer_, costmap_frame_, adjusted_global_traj, transformed_global_traj))
+    if (!dwa_util::transformPath2D(tf_buffer_, costmap_frame_, adjusted_global_traj, transformed_global_traj))
     {
         return;
     }
@@ -220,14 +220,14 @@ void DWALocalPlanner::computeVelocityCommand()
 
     if (debug_)
     {
-        global_traj_pub_->publish(dwa_utils::path2Dto3D(transformed_global_traj));
+        global_traj_pub_->publish(dwa_util::path2Dto3D(transformed_global_traj));
     }
 
-    geometry_msgs::msg::Pose2D start_pose = dwa_utils::pose3Dto2D(pose.pose);
+    geometry_msgs::msg::Pose2D start_pose = dwa_util::pose3Dto2D(pose.pose);
 
     // lock to read from odom_
     std::unique_lock<std::mutex> odom_lock(odom_mtx_);
-    nav_2d_msgs::msg::Twist2D current_vel = dwa_utils::twist3Dto2D(odom_.twist.twist);
+    nav_2d_msgs::msg::Twist2D current_vel = dwa_util::twist3Dto2D(odom_.twist.twist);
     odom_lock.unlock();
 
     // sample local trajs and score them
@@ -257,13 +257,13 @@ void DWALocalPlanner::computeVelocityCommand()
         }
         
         // score trajs
-        for (int j=0; j<critics_.size(); ++j)
+        for (size_t j=0; j<critics_.size(); ++j)
         {
             node.critics_scores.push_back(critics_[j]->scoreTrajectory(traj));            
         }
         nodes.push_back(node);
 
-        for (int j=0; j<critics_.size(); ++j)
+        for (size_t j=0; j<critics_.size(); ++j)
         {
             // store best score
             if (nodes[i].critics_scores[j] > nodes[best_score_idxs[j]].critics_scores[j])
@@ -285,7 +285,7 @@ void DWALocalPlanner::computeVelocityCommand()
     prev_num_vel_samples_ = i;
 
     // normalize scores
-    for (int j=0; j<critics_.size(); ++j)
+    for (size_t j=0; j<critics_.size(); ++j)
     {
         double best_score = nodes[best_score_idxs[j]].critics_scores[j];
         double worst_score = nodes[worst_score_idxs[j]].critics_scores[j];
@@ -321,7 +321,7 @@ void DWALocalPlanner::computeVelocityCommand()
         }
     }
 
-    cmd_vel_pub_->publish(dwa_utils::twist2Dto3D(nodes[best_total_score_idx].cmd_vel));
+    cmd_vel_pub_->publish(dwa_util::twist2Dto3D(nodes[best_total_score_idx].cmd_vel));
 
     if (debug_)
     {
@@ -419,7 +419,7 @@ nav_2d_msgs::msg::Path2D DWALocalPlanner::prepareGlobalTrajectory(nav_2d_msgs::m
     // cut the global trajectory where the local costmap ends
     // if the global trajectory ends inside of the costmap, it doesn't get cut
     unsigned int x, y;
-    int i = 0;
+    size_t i = 0;
     for (; i<in_traj.poses.size(); ++i)
     {
         // the first pose that is outside of the local costmap
@@ -434,7 +434,7 @@ nav_2d_msgs::msg::Path2D DWALocalPlanner::prepareGlobalTrajectory(nav_2d_msgs::m
     geometry_msgs::msg::Pose2D prev = in_traj.poses[0];
     out_traj.poses.push_back(prev);
     double resolution = costmap_->getResolution();
-    for (int i=0; i<in_traj.poses.size(); ++i)
+    for (size_t i=0; i<in_traj.poses.size(); ++i)
     {
         geometry_msgs::msg::Pose2D cur;
         cur.x = in_traj.poses[i].x;

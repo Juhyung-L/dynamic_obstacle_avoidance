@@ -18,7 +18,7 @@
   <depend>nav_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>nav2_costmap_2d</depend>
-  <depend>dwa_utils</depend>
+  <depend>dwa_util</depend>
   <depend>nav2_util</depend>
   <depend>rclcpp_lifecycle</depend>
   <depend>lifecycle_msgs</depend>

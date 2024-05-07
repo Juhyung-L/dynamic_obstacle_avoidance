@@ -9,7 +9,7 @@
 #include "nav_2d_msgs/msg/twist2_d.hpp"
 #include "nav_2d_msgs/msg/path2_d.hpp"
 
-namespace dwa_utils
+namespace dwa_util
 {
     nav_2d_msgs::msg::Twist2D twist3Dto2D(const geometry_msgs::msg::Twist& twist);
     geometry_msgs::msg::Twist twist2Dto3D(const nav_2d_msgs::msg::Twist2D& twist);

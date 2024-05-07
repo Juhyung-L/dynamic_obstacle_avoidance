@@ -12,7 +12,7 @@ find_package(nav_2d_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav2_costmap_2d REQUIRED)
-find_package(dwa_utils REQUIRED)
+find_package(dwa_util REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
@@ -28,7 +28,7 @@ set(dependencies
   nav_msgs
   geometry_msgs
   nav2_costmap_2d
-  dwa_utils
+  dwa_util
   nav2_util
   rclcpp_lifecycle
   lifecycle_msgs

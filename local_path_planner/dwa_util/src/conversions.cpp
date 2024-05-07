@@ -2,9 +2,9 @@
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
-#include "dwa_utils/conversions.hpp"
+#include "dwa_util/conversions.hpp"
 
-namespace dwa_utils
+namespace dwa_util
 {
 nav_2d_msgs::msg::Twist2D twist3Dto2D(const geometry_msgs::msg::Twist& twist)
 {
@@ -40,7 +40,7 @@ nav_2d_msgs::msg::Path2D path3Dto2D(const nav_msgs::msg::Path& path)
 {
     nav_2d_msgs::msg::Path2D path2d;
     path2d.header.frame_id = path.header.frame_id;
-    for (int i=0; i<path.poses.size(); ++i)
+    for (size_t i=0; i<path.poses.size(); ++i)
     {
         geometry_msgs::msg::Pose2D pose2d;
         pose2d.x = path.poses[i].pose.position.x;
@@ -59,7 +59,7 @@ nav_msgs::msg::Path path2Dto3D(const nav_2d_msgs::msg::Path2D& path)
     pose3d.pose.position.z = 0.0;
     pose3d.pose.orientation.x = 0.0;
     pose3d.pose.orientation.y = 0.0;
-    for (int i=0; i<path.poses.size(); ++i)
+    for (size_t i=0; i<path.poses.size(); ++i)
     {
         pose3d.pose.position.x = path.poses[i].x;
         pose3d.pose.position.y = path.poses[i].y;
