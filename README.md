@@ -14,7 +14,7 @@ Every time a node is inserted into the priority queue, the node with the lowest 
 https://github.com/Juhyung-L/GNC/assets/102873080/6edecccf-5511-4af7-8c7a-431e26509217
 
 # DWA Local Path Planner
-The DWA local path planner samples a bunch of local trajectories (short trajectories) that the robot can follow. The sampled trajectories are scored by multiple critics and the trajectory with the highest score is chosed. There are 3 critics implemented in this repository: GlobalPathAlignCritic, HomingCritic, ObstacleProximityCritic.
+The DWA local path planner samples a bunch of local trajectories (short trajectories) that the robot can follow. The sampled trajectories are scored by multiple critics and the trajectory with the highest score is chosen. There are 3 critics implemented in this repository: GlobalPathAlignCritic, HomingCritic, ObstacleProximityCritic.
 
 GlobalPathAlignCritic:
 - Penalizes trajectories that do not align with the global trajectory.
@@ -23,6 +23,6 @@ HomingCritic:
 - If the goal pose is inside the local costmap, score local trajectories based on distance between goal pose and last pose of local trajectory
 
 ObstacleProximityCritic:
-- Penalizes trajectories that are close to obstacles
+- Penalizes trajectories that too are close to obstacles
 
 [![Watch the video](https://img.youtube.com/vi/XEWZgA5ivXk/maxresdefault.jpg)](https://www.youtube.com/watch?v=XEWZgA5ivXk "DWA Local Planner Footage")
