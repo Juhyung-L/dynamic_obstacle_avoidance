@@ -20,11 +20,6 @@ public:
     XYThetaVelocityIterator()
     {}
 
-    /**
-     * @param num_iterations the valid velocity ranges will be divided by this number.
-     * So the maximum number of iterations for each dimension is num_iterations+1
-     * and the maximum total number of iterations is (num_iterations+1)^3
-    */
     XYThetaVelocityIterator(nav2_util::LifecycleNode::WeakPtr parent)
     : parent_(parent)
     {
