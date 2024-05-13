@@ -94,7 +94,7 @@ DWALocalPlanner::on_configure(const rclcpp_lifecycle::State & /*state*/)
     );
 
     kp_ = std::make_shared<KinematicsParameters>(shared_from_this());
-    vel_it_ = XYThetaVelocityIterator(shared_from_this(), kp_);
+    vel_it_ = XYThetaVelocityIterator(shared_from_this());
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
@@ -110,6 +110,7 @@ DWALocalPlanner::on_activate(const rclcpp_lifecycle::State & /*state*/)
 {
     RCLCPP_INFO(logger_, "Activating");
 
+    kp_->initialize();
     trajs_pub_->on_activate();
     cmd_vel_pub_->on_activate();
     global_traj_pub_->on_activate();
@@ -231,7 +232,7 @@ void DWALocalPlanner::computeVelocityCommand()
     odom_lock.unlock();
 
     // sample local trajs and score them
-    vel_it_.initialize(current_vel, sim_time_);
+    vel_it_.initialize(current_vel, sim_time_, kp_);
     std::vector<Node> nodes;
     nodes.reserve(prev_num_vel_samples_);
     int i = 0;
