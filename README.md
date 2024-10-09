@@ -11,7 +11,7 @@ The A* Search global path planner finds the shortest trajectory from the robot's
 
 Every time a node is inserted into the priority queue, the node with the lowest priority comes at the top and is therefore popped first. Intuitively, this means that nodes that are both closer to the goal and obstacle-free are searched first when looking for the shortest trajectory.
 
-https://github.com/Juhyung-L/GNC/assets/102873080/6edecccf-5511-4af7-8c7a-431e26509217
+![](https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ3pqZ3JsaDBlbjNwbXl6NDBkZmIyeHJkZTBvenhqMTh3MGxld28wZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/z6Aq2UxRt1LF82msIE/giphy.gif)
 
 # DWA Local Path Planner
 The DWA local path planner samples a bunch of local trajectories (short trajectories) that the robot can follow. The sampled trajectories are scored by multiple critics and the trajectory with the highest score is chosen. There are 3 critics implemented in this repository: GlobalPathAlignCritic, HomingCritic, ObstacleProximityCritic.
@@ -25,4 +25,4 @@ HomingCritic:
 ObstacleProximityCritic:
 - Penalizes trajectories that too are close to obstacles
 
-[![Watch the video](https://img.youtube.com/vi/XEWZgA5ivXk/maxresdefault.jpg)](https://www.youtube.com/watch?v=XEWZgA5ivXk "DWA Local Planner Footage")
+![](https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExdTJha2wwdGZueWlkMjE5YWdiM2RmdzRzYWNmbmx3c2JmZDRjZGR0aiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/A7IfpXWOYjAkB1DGcB/giphy-downsized-large.gif)
