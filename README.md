@@ -1,7 +1,7 @@
 # dynamic_obstacle_avoidance
 This repository has two packages: A* Search global path planner and Dynamic Window Approach (DWA) local path planner.
 
-Detailed Explanation at: https://juhyungsprojects.blogspot.com/2024/04/dynamic-window-approach-for-local-path.html
+Detailed Explanation at: https://juhyunglee0313.wixsite.com/portfolio/post/dynamic-window-approach
 
 # A* Search Global Path Planner:
 The A* Search global path planner finds the shortest trajectory from the robot's current pose to the goal pose using the static global costmap and the A* Search algorithm. The algorithm is a modified Breath-First Search algorithm where a priority queue is used instead of a regular queue. The priority queue sorts the inserted nodes based on their heuristics.The heuristics in this case is the sum of three components:
